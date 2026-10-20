@@ -576,7 +576,10 @@ class So101Adapter:
         final: Observation | None = None
         steps = 0
         for index in range(GRIPPER_RAMP_STEPS):
-            value = start + (target - start) * float(index + 1) / GRIPPER_RAMP_STEPS
+            fraction = float(index + 1) / GRIPPER_RAMP_STEPS
+            # Multiplying then dividing by the step count can land one ulp outside
+            # [0, 1] and the contract rejects the command before it reaches the runtime.
+            value = float(np.clip(start + (target - start) * fraction, 0.0, 1.0))
             result = self.step(
                 RobotAction(
                     arms={

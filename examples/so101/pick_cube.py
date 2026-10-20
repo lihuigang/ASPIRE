@@ -51,8 +51,10 @@ if cube.ok and pad.ok:
 
     lifted = None
     if closed is not None:
+        # Rise straight up at the grasp site. Translating along X while lifting
+        # pushes cubes near the workspace edge out of IK reach.
         lifted = move(
-            (float(center[0]) + 0.019, float(center[1]), 0.075),
+            site(center, 0.062),
             max_steps=200,
         )
         report["lifted"] = lifted.ok

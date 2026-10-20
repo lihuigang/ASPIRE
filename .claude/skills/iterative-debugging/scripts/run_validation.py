@@ -83,6 +83,10 @@ def benchmark_environment(benchmark: str, gpu: int | str, *, root: Path) -> dict
             ),
             "PYTHONHASHSEED": "0",
         }
+    if benchmark == "so101":
+        # The runtime renders remotely; this process only runs HTTP and local IK, so
+        # an EGL request would be rejected by MuJoCo on hosts without EGL (macOS).
+        return {"PYTHONHASHSEED": "0"}
     return {
         "MUJOCO_GL": "egl",
         "PYOPENGL_PLATFORM": "egl",
