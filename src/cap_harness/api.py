@@ -11,6 +11,7 @@ import numpy as np
 from cap_harness.contracts import (
     DEFAULT_EMBODIMENT,
     JOINT_DIMENSIONS,
+    SUPPORTED_JOINT_DIMENSIONS,
     ArmCommand,
     ExecutionResult,
     GraspCandidate,
@@ -141,9 +142,13 @@ class CapApi:
             )
             for arm, value in source.items():
                 joints = np.asarray(value, dtype=np.float64)
-                if joints.shape not in {(6,), (7,)} or not bool(np.all(np.isfinite(joints))):
+                if (
+                    joints.ndim != 1
+                    or joints.shape[0] not in SUPPORTED_JOINT_DIMENSIONS
+                    or not bool(np.all(np.isfinite(joints)))
+                ):
                     raise ValueError(
-                        "home_joint_positions must contain finite 6- or 7-joint vectors"
+                        "home_joint_positions must contain finite 5-, 6-, or 7-joint vectors"
                     )
                 self._home_joint_positions[str(arm)] = joints.copy()
 

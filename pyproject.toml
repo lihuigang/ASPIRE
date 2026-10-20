@@ -38,6 +38,11 @@ yam-real = [
   "mujoco==3.3.0",
   "pyrealsense2>=2.55",
 ]
+so101 = [
+  "imageio[ffmpeg]>=2.34",
+  "mujoco==3.3.0",
+  "pillow>=10",
+]
 yam-real-server = [
   "damiao-motor>=1.0.7b1",
 ]
@@ -156,6 +161,7 @@ cap_harness = [
   "yam_real/description/**/*.urdf",
   "yam_real/description/**/*.yml",
   "yam_real/description/**/*.stl",
+  "so101/assets/**/*.xml",
 ]
 [tool.uv.sources]
 contact-graspnet-pytorch = { path = "third_party/contact_graspnet_pytorch", editable = true }

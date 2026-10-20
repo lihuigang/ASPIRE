@@ -17,6 +17,7 @@ JOINT_DIMENSIONS: Mapping[str, int] = MappingProxyType(
         "behavior": 7,
         "libero": 7,
         "robosuite": 7,
+        "so101": 5,
         "yam_real": 6,
     }
 )
@@ -190,14 +191,14 @@ def _arm_vectors(
 def _joint_vector(value: object, name: str) -> np.ndarray:
     result = _array(value, name, shape=(None,))
     if result.shape[0] not in SUPPORTED_JOINT_DIMENSIONS:
-        raise ValueError(f"{name} must contain 6 or 7 joints, got {result.shape[0]}")
+        raise ValueError(f"{name} must contain 5, 6, or 7 joints, got {result.shape[0]}")
     return result
 
 
 def _joint_matrix(value: object, name: str) -> np.ndarray:
     result = _array(value, name, shape=(None, None))
     if result.shape[1] not in SUPPORTED_JOINT_DIMENSIONS:
-        raise ValueError(f"{name} waypoints must contain 6 or 7 joints, got {result.shape[1]}")
+        raise ValueError(f"{name} waypoints must contain 5, 6, or 7 joints, got {result.shape[1]}")
     return result
 
 
@@ -947,7 +948,7 @@ class RobotPlanningContext:
             for arm, value in raw_names.items()
         }
         if any(len(value) not in SUPPORTED_JOINT_DIMENSIONS for value in names.values()):
-            raise ValueError("joint_names must contain 6 or 7 entries per arm")
+            raise ValueError("joint_names must contain 5, 6, or 7 entries per arm")
         raw_transforms = _mapping(self.base_transforms, "base_transforms", allow_empty=False)
         raw_links = _mapping(self.end_effector_links, "end_effector_links", allow_empty=False)
         if set(raw_transforms) != set(names) or set(raw_links) != set(names):
@@ -990,8 +991,8 @@ class MotionStrategy:
         ik_solver = _non_empty_string(self.ik_solver, "ik_solver")
         trajectory_planner = _non_empty_string(self.trajectory_planner, "trajectory_planner")
         pose_planner = _non_empty_string(self.pose_planner, "pose_planner")
-        if ik_solver not in {"pyroki", "curobo", "mink"}:
-            raise ValueError("ik_solver must be 'pyroki', 'curobo', or 'mink'")
+        if ik_solver not in {"pyroki", "curobo", "mink", "mujoco"}:
+            raise ValueError("ik_solver must be 'pyroki', 'curobo', 'mink', or 'mujoco'")
         if trajectory_planner not in {"interpolation", "curobo"}:
             raise ValueError("trajectory_planner must be 'interpolation' or 'curobo'")
         if pose_planner not in {"composed", "curobo-integrated"}:

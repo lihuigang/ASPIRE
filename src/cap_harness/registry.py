@@ -75,11 +75,17 @@ YAM_REAL_PUBLIC_TOOL_NAMES = frozenset(
     {"yam_real.get_task_metadata", "yam_real.get_controller_metadata"}
 )
 
+SO101_PUBLIC_TOOL_NAMES = frozenset(
+    {"so101.get_task_metadata", "so101.get_controller_metadata"}
+)
+"""Nonprivileged SO-101 simulation extensions."""
+
 _APPROVED_EMBODIMENT_PREFIXES = (
     "behavior.",
     "yam_real.",
     "libero.",
     "robosuite.",
+    "so101.",
 )
 
 _NAME_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*$")

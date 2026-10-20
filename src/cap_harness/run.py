@@ -83,8 +83,8 @@ def run_program(
     allow_motion: bool = False,
 ) -> RunOutcome:
     """Run an episode, using its task horizon when max_steps is not supplied."""
-    if benchmark not in {"behavior", "libero-pro", "robosuite", "yam_real"}:
-        raise ValueError("benchmark must be behavior, libero-pro, robosuite, or yam_real")
+    if benchmark not in {"behavior", "libero-pro", "robosuite", "so101", "yam_real"}:
+        raise ValueError("benchmark must be behavior, libero-pro, robosuite, so101, or yam_real")
     if init_mode not in {"saved", "seeded"}:
         raise ValueError("init_mode must be 'saved' or 'seeded'")
     if init_mode != "saved" and benchmark != "libero-pro":
@@ -122,6 +122,15 @@ def run_program(
         metadata = registry.resolve(suite, task_id)
         adapter_type = YamRealAdapter
         extension_allowlist = YAM_REAL_PUBLIC_TOOL_NAMES
+    elif benchmark == "so101":
+        from .registry import SO101_PUBLIC_TOOL_NAMES
+        from .so101.adapter import So101Adapter
+        from .so101.registry import So101TaskRegistry
+
+        registry = So101TaskRegistry()
+        metadata = registry.resolve(suite, task_id)
+        adapter_type = So101Adapter
+        extension_allowlist = SO101_PUBLIC_TOOL_NAMES
     else:
         from cap_harness.registry import ROBOSUITE_PUBLIC_TOOL_NAMES
         from cap_harness.robosuite.adapter import RobosuiteAdapter
@@ -143,6 +152,14 @@ def run_program(
             "ik": ("curobo",),
             "trajectory_planning": ("interpolation", "curobo"),
             "pose_planning": ("curobo-integrated",),
+        }
+    elif benchmark == "so101":
+        provider_capabilities = {
+            "segmentation": "color",
+            "grasping": (),
+            "ik": ("mujoco",),
+            "trajectory_planning": ("interpolation",),
+            "pose_planning": ("composed",),
         }
     else:
         provider_capabilities = {
@@ -314,6 +331,28 @@ def run_program(
                     ik_solver="curobo",
                     trajectory_planner="curobo",
                     pose_planner="curobo-integrated",
+                ),
+                recorder=recorder,
+            )
+        elif benchmark == "so101":
+            from .contracts import MotionStrategy
+            from .so101.ik_provider import So101IKProvider
+            from .so101.perception import So101ColorSegmentationProvider
+
+            solver = TracedProvider(
+                So101IKProvider(adapter.kinematics), recorder, "mujoco_ik"  # type: ignore[attr-defined]
+            )
+            api = CapApi(
+                adapter,
+                segmentation_provider=TracedProvider(
+                    So101ColorSegmentationProvider(), recorder, "color"
+                ),
+                ik_providers={"mujoco": solver},
+                default_camera="top_cam",
+                default_motion_strategy=MotionStrategy(
+                    ik_solver="mujoco",
+                    trajectory_planner="interpolation",
+                    pose_planner="composed",
                 ),
                 recorder=recorder,
             )
